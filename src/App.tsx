@@ -7,6 +7,7 @@ import Calls from './pages/Calls';
 import Login from './pages/Login';
 import Appointments from './pages/Appointments';
 import Emergencies from './pages/Emergencies';
+import { Invoices } from './pages/Invoices';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -31,6 +32,7 @@ function App() {
               <Route path="calls" element={<Calls />} />
               <Route path="appointments" element={<Appointments />} />
               <Route path="emergencies" element={<Emergencies />} />
+              <Route path="invoices" element={<Invoices />} />
               {/* Redirect unknown routes to dashboard */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

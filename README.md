@@ -1,6 +1,36 @@
-# React + TypeScript + Vite
+# Optimized Entry Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A comprehensive business management portal with AI-powered call processing, appointment scheduling, and Stripe invoice integration.
+
+## Features
+
+- 📞 AI-processed call/inquiry management
+- 📅 Appointment scheduling and tracking
+- 🚨 Emergency incident management
+- 💰 **Stripe invoice integration** - Send professional invoices to customers
+- 📊 Real-time analytics dashboard
+- 🔐 Secure authentication via Supabase
+- 🎨 Modern, responsive UI with dark mode
+
+## Stripe Invoice Integration
+
+✅ **Important:** Invoices are sent from YOUR business, not "Optimized Entry Portal"
+
+When you integrate Stripe, customers will see:
+- Your business name and logo
+- Your contact information
+- Your brand colors
+- Payments go directly to YOUR Stripe account
+
+**Setup Guides:**
+- 📘 [Complete Setup Instructions](STRIPE_SETUP.md) - Step-by-step guide to configure Stripe
+- 🎨 [Branding Guide](BRANDING_GUIDE.md) - How to customize invoices with your business branding
+
+---
+
+## Tech Stack
+
+This application is built with:
 
 Currently, two official plugins are available:
 

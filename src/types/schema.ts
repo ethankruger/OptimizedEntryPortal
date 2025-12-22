@@ -70,3 +70,51 @@ export interface Emergency {
     source?: string;
     webhook_received_at: string;
 }
+
+export interface InvoiceLineItem {
+    description: string;
+    quantity: number;
+    unit_amount: number;
+}
+
+export interface Invoice {
+    id: string;
+    user_id: string;
+    inquiry_id?: string;
+    appointment_id?: string;
+    stripe_invoice_id?: string;
+    stripe_customer_id?: string;
+    customer_name: string;
+    customer_email: string;
+    customer_phone?: string;
+    line_items: InvoiceLineItem[];
+    subtotal: number;
+    tax?: number;
+    total: number;
+    status: 'draft' | 'sent' | 'paid' | 'void' | 'uncollectible';
+    due_date?: string;
+    sent_at?: string;
+    paid_at?: string;
+    invoice_url?: string;
+    notes?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface StripeAccount {
+    id: string;
+    user_id: string;
+    stripe_account_id: string;
+    stripe_user_id?: string;
+    access_token: string;
+    refresh_token?: string;
+    scope?: string;
+    account_type?: string;
+    business_name?: string;
+    business_email?: string;
+    charges_enabled: boolean;
+    payouts_enabled: boolean;
+    details_submitted: boolean;
+    connected_at: string;
+    updated_at: string;
+}

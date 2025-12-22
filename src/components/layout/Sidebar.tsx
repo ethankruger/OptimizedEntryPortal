@@ -3,6 +3,7 @@ import {
     AlertCircle,
     Calendar,
     ChevronUp,
+    FileText,
     LayoutDashboard,
     Phone,
     Settings,
@@ -44,6 +45,11 @@ export function Sidebar() {
             title: "Emergencies",
             url: "/emergencies",
             icon: AlertCircle,
+        },
+        {
+            title: "Invoices",
+            url: "/invoices",
+            icon: FileText,
         },
     ]
 
