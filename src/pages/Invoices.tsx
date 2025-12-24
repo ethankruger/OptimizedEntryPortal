@@ -13,11 +13,10 @@ export function Invoices() {
   const { data: invoices, loading: invoicesLoading } = useCollection<Invoice>('invoices')
   const { data: inquiries } = useCollection<Inquiry>('inquiries')
   const { data: appointments } = useCollection<Appointment>('appointments')
-  const { data: stripeAccounts } = useCollection<StripeAccount>('stripe_accounts')
+  const { data: stripeAccounts } = useCollection<StripeAccount>('stripe_accounts', { orderBy: 'connected_at' })
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
-  const [searchTerm, setSearchTerm] = useState('')
 
   const stripeAccount = useMemo(() => {
     if (!user || !stripeAccounts) return null
@@ -40,17 +39,8 @@ export function Invoices() {
   }, [invoices])
 
   const filteredInvoices = useMemo(() => {
-    if (!invoices) return []
-    if (!searchTerm) return invoices
-
-    const term = searchTerm.toLowerCase()
-    return invoices.filter(
-      inv =>
-        inv.customer_name.toLowerCase().includes(term) ||
-        inv.customer_email.toLowerCase().includes(term) ||
-        inv.status.toLowerCase().includes(term)
-    )
-  }, [invoices, searchTerm])
+    return invoices || []
+  }, [invoices])
 
   const getStatusColor = (status: Invoice['status']) => {
     switch (status) {
@@ -121,129 +111,146 @@ export function Invoices() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Invoices</p>
-              <p className="text-2xl font-semibold text-[var(--text-primary)]">{stats.total}</p>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-8 text-white mb-10">
+        <div className="glass-panel rounded-xl border border-white/10 overflow-hidden min-h-[100px]">
+          <div className="p-4 flex flex-col h-full justify-between gap-3">
+            <div className="flex justify-between items-start gap-3">
+              <span className="text-xs font-medium text-gray-400 leading-tight">Total Invoices</span>
+              <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-white/80 flex-shrink-0">
+                <FileText size={18} />
+              </div>
             </div>
-            <FileText className="w-8 h-8 text-blue-500 opacity-50" />
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold font-display tracking-tight text-white leading-none">{stats.total}</h3>
+              <span className="inline-flex items-center text-[10px] font-semibold text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/5 w-fit">
+                All time
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Draft</p>
-              <p className="text-2xl font-semibold text-[var(--text-primary)]">{stats.draft}</p>
+        <div className="glass-panel rounded-xl border border-white/10 overflow-hidden min-h-[100px]">
+          <div className="p-4 flex flex-col h-full justify-between gap-3">
+            <div className="flex justify-between items-start gap-3">
+              <span className="text-xs font-medium text-gray-400 leading-tight">Draft</span>
+              <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-white/80 flex-shrink-0">
+                <Clock size={18} />
+              </div>
             </div>
-            <Clock className="w-8 h-8 text-slate-500 opacity-50" />
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold font-display tracking-tight text-white leading-none">{stats.draft}</h3>
+              <span className="inline-flex items-center text-[10px] font-semibold text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/5 w-fit">
+                Not sent
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Sent</p>
-              <p className="text-2xl font-semibold text-[var(--text-primary)]">{stats.sent}</p>
+        <div className="glass-panel rounded-xl border border-white/10 overflow-hidden min-h-[100px]">
+          <div className="p-4 flex flex-col h-full justify-between gap-3">
+            <div className="flex justify-between items-start gap-3">
+              <span className="text-xs font-medium text-gray-400 leading-tight">Sent</span>
+              <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-white/80 flex-shrink-0">
+                <Send size={18} />
+              </div>
             </div>
-            <Send className="w-8 h-8 text-blue-500 opacity-50" />
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold font-display tracking-tight text-white leading-none">{stats.sent}</h3>
+              <span className="inline-flex items-center text-[10px] font-semibold text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/5 w-fit">
+                Awaiting payment
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Paid</p>
-              <p className="text-2xl font-semibold text-[var(--text-primary)]">{stats.paid}</p>
+        <div className="glass-panel rounded-xl border border-white/10 overflow-hidden min-h-[100px]">
+          <div className="p-4 flex flex-col h-full justify-between gap-3">
+            <div className="flex justify-between items-start gap-3">
+              <span className="text-xs font-medium text-gray-400 leading-tight">Paid</span>
+              <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-white/80 flex-shrink-0">
+                <CheckCircle2 size={18} />
+              </div>
             </div>
-            <CheckCircle2 className="w-8 h-8 text-emerald-500 opacity-50" />
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold font-display tracking-tight text-white leading-none">{stats.paid}</h3>
+              <span className="inline-flex items-center text-[10px] font-semibold text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/5 w-fit">
+                Completed
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Revenue</p>
-              <p className="text-2xl font-semibold text-[var(--text-primary)]">
+        <div className="glass-panel rounded-xl border border-white/10 overflow-hidden min-h-[100px]">
+          <div className="p-4 flex flex-col h-full justify-between gap-3">
+            <div className="flex justify-between items-start gap-3">
+              <span className="text-xs font-medium text-gray-400 leading-tight">Total Revenue</span>
+              <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-white/80 flex-shrink-0">
+                <DollarSign size={18} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold font-display tracking-tight text-white leading-none">
                 ${stats.totalRevenue.toFixed(2)}
-              </p>
+              </h3>
+              <span className="inline-flex items-center text-[10px] font-semibold text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/5 w-fit">
+                Total earned
+              </span>
             </div>
-            <DollarSign className="w-8 h-8 text-emerald-500 opacity-50" />
           </div>
         </div>
-      </div>
-
-      {/* Search */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Search invoices by customer name, email, or status..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
       </div>
 
       {/* Invoices Table */}
-      <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-[var(--bg-tertiary)] border-b border-[var(--border-primary)]">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
-                  Customer
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
-                  Due Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
-                  Actions
-                </th>
+      <div className="glass-panel rounded-2xl overflow-hidden border border-white/10">
+        <div className="overflow-x-auto p-4">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-white/10 bg-black/20 text-[10px] uppercase tracking-wider text-gray-400">
+                <th className="px-4 py-2 font-semibold">Customer</th>
+                <th className="px-4 py-2 font-semibold">Amount</th>
+                <th className="px-4 py-2 font-semibold">Status</th>
+                <th className="px-4 py-2 font-semibold">Due Date</th>
+                <th className="px-4 py-2 font-semibold">Created</th>
+                <th className="px-4 py-2 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--border-primary)]">
+            <tbody className="divide-y divide-white/5 text-sm">
               {invoicesLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-[var(--text-secondary)]">
-                    Loading invoices...
+                  <td colSpan={6} className="px-8 py-20 text-center text-gray-500 italic">
+                    Accessing database...
                   </td>
                 </tr>
               ) : filteredInvoices.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-[var(--text-secondary)]">
-                    No invoices found. Create your first invoice to get started.
+                  <td colSpan={6} className="px-8 py-20 text-center text-gray-500">
+                    <div className="flex flex-col items-center gap-5">
+                      <div className="p-5 rounded-full bg-white/5">
+                        <FileText size={24} />
+                      </div>
+                      <p>No invoices found. Create your first invoice to get started.</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 filteredInvoices.map((invoice) => (
-                  <tr key={invoice.id} className="hover:bg-[var(--bg-tertiary)] transition-colors">
-                    <td className="px-6 py-4">
+                  <tr key={invoice.id} className="group hover:bg-white/5 transition-colors cursor-default">
+                    <td className="px-4 py-2.5">
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-[var(--text-primary)]">
+                        <span className="font-medium text-white group-hover:text-indigo-300 transition-colors leading-tight text-sm">
                           {invoice.customer_name}
                         </span>
-                        <span className="text-xs text-[var(--text-secondary)]">
+                        <span className="text-xs text-gray-400">
                           {invoice.customer_email}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-semibold text-[var(--text-primary)]">
+                    <td className="px-4 py-2.5">
+                      <span className="text-sm font-semibold text-white">
                         ${invoice.total.toFixed(2)}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(invoice.status)}`}
                       >
@@ -251,20 +258,20 @@ export function Invoices() {
                         {invoice.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-[var(--text-secondary)]">
+                    <td className="px-4 py-2.5">
+                      <span className="text-sm text-gray-400">
                         {invoice.due_date
                           ? new Date(invoice.due_date).toLocaleDateString()
-                          : 'No due date'}
+                          : '—'}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-[var(--text-secondary)]">
+                    <td className="px-4 py-2.5">
+                      <span className="text-sm text-gray-400">
                         {new Date(invoice.created_at).toLocaleDateString()}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
+                    <td className="px-4 py-2.5 text-right">
+                      <div className="flex gap-2 justify-end">
                         {invoice.invoice_url && (
                           <a
                             href={invoice.invoice_url}

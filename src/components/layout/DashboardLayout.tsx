@@ -10,9 +10,9 @@ const DashboardLayout = () => {
 
             <Sidebar />
 
-            <main className="flex-1 relative z-10 flex flex-col h-screen overflow-hidden">
+            <main className="flex-1 relative z-10 flex flex-col h-screen overflow-x-hidden">
                 <HeroHighlight containerClassName="h-full w-full items-start justify-start bg-transparent dark:bg-transparent" className="w-full h-full">
-                    <div className="flex-1 p-8 md:p-12 overflow-y-auto w-full h-full">
+                    <div className="flex-1 p-8 md:p-12 overflow-y-auto overflow-x-hidden w-full h-full">
                         <Outlet />
                     </div>
                 </HeroHighlight>

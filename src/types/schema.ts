@@ -15,6 +15,7 @@ export interface Inquiry {
     follow_up_method?: string;
     outcome?: string;
     tags?: string[];
+    archived_at?: string;
     created_at: string;
     updated_at: string;
 }
@@ -52,6 +53,11 @@ export interface Appointment {
     timezone?: string;
     urgency_level?: string;
     assigned_to?: string;
+    completed_at?: string;
+    archived?: boolean;
+    latitude?: number;
+    longitude?: number;
+    geocoded_at?: string;
     created_at: string;
 }
 
@@ -68,6 +74,9 @@ export interface Emergency {
     follow_up_required?: boolean;
     emergency_details?: any; // JSONB
     source?: string;
+    status?: 'active' | 'completed' | 'resolved';
+    completed_at?: string;
+    archived?: boolean;
     webhook_received_at: string;
 }
 

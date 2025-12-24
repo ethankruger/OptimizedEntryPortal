@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
 export function useCollection<T>(table: string, options?: { orderBy?: string }) {
@@ -7,24 +7,26 @@ export function useCollection<T>(table: string, options?: { orderBy?: string }) 
     const [error, setError] = useState<string | null>(null);
     const orderBy = options?.orderBy || 'created_at';
 
+    const fetchData = useCallback(async () => {
+        try {
+            console.log(`[useCollection] Fetching ${table}...`);
+            const { data, error } = await supabase
+                .from(table)
+                .select('*')
+                .order(orderBy, { ascending: false });
+
+            if (error) throw error;
+            console.log(`[useCollection] Fetched ${table}:`, data?.length, 'rows');
+            setData(data as T[]);
+        } catch (err: any) {
+            setError(err.message);
+            console.error(`Error fetching ${table}:`, err);
+        } finally {
+            setLoading(false);
+        }
+    }, [table, orderBy]);
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from(table)
-                    .select('*')
-                    .order(orderBy, { ascending: false });
-
-                if (error) throw error;
-                setData(data as T[]);
-            } catch (err: any) {
-                setError(err.message);
-                console.error(`Error fetching ${table}:`, err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchData();
 
         // Realtime subscription
@@ -41,7 +43,7 @@ export function useCollection<T>(table: string, options?: { orderBy?: string }) 
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [table]);
+    }, [table, fetchData]);
 
-    return { data, loading, error };
+    return { data, loading, error, refetch: fetchData };
 }

@@ -1,23 +1,92 @@
 import { motion } from 'framer-motion';
+import { useState, useMemo } from 'react';
 import { useCollection } from '../hooks/useCollection';
-import { Clock, User, Phone as PhoneIcon, CheckCircle, AlertTriangle, Filter } from 'lucide-react';
+import { Clock, User, Phone as PhoneIcon, CheckCircle, AlertTriangle, Filter, Archive, ArchiveRestore } from 'lucide-react';
 import type { Inquiry } from '../types/schema';
-
+import { supabase } from '../lib/supabase';
 import { PageHeader, PageContainer } from '../components/layout/PageComponents';
+import { AnimatedDropdownMenu } from '../components/ui/animated-dropdown-menu';
 
 const Calls = () => {
-    const { data: inquiries, loading } = useCollection<Inquiry>('inquiries');
+    const { data: inquiries, loading, refetch } = useCollection<Inquiry>('inquiries');
+    const [showArchived, setShowArchived] = useState(false);
+
+    const activeInquiries = useMemo(() => {
+        return inquiries?.filter(i => i.status !== 'archived') || [];
+    }, [inquiries]);
+
+    const archivedInquiries = useMemo(() => {
+        return inquiries?.filter(i => i.status === 'archived') || [];
+    }, [inquiries]);
+
+    const displayedInquiries = showArchived ? archivedInquiries : activeInquiries;
+
+    const handleToggleStatus = async (inquiry: Inquiry) => {
+        const newStatus = inquiry.status === 'processed' ? 'new' : 'processed';
+
+        const { error } = await supabase
+            .from('inquiries')
+            .update({ status: newStatus })
+            .eq('id', inquiry.id);
+
+        if (error) {
+            console.error('Error updating inquiry:', error);
+        } else {
+            await refetch();
+        }
+    };
+
+    const handleArchive = async (inquiry: Inquiry) => {
+        const { error } = await supabase
+            .from('inquiries')
+            .update({ status: 'archived' })
+            .eq('id', inquiry.id);
+
+        if (error) {
+            console.error('Error archiving inquiry:', error);
+        } else {
+            await refetch();
+        }
+    };
+
+    const handleUnarchive = async (inquiry: Inquiry) => {
+        const { error } = await supabase
+            .from('inquiries')
+            .update({ status: 'new' })
+            .eq('id', inquiry.id);
+
+        if (error) {
+            console.error('Error unarchiving inquiry:', error);
+        } else {
+            await refetch();
+        }
+    };
 
     const stats = [
-        { title: 'Total Inquiries', value: inquiries.length, icon: PhoneIcon, color: '#818cf8', trend: 'All time' },
-        { title: 'Action Required', value: inquiries.filter(i => i.status === 'action_required').length, icon: AlertTriangle, color: '#ff8904', trend: 'Needs attention' },
-        { title: 'Processed', value: inquiries.filter(i => i.status === 'processed').length, icon: CheckCircle, color: '#30b357', trend: 'Completed' },
+        { title: 'Total Inquiries', value: activeInquiries.length, icon: PhoneIcon, color: '#818cf8', trend: 'Active' },
+        { title: 'Action Required', value: activeInquiries.filter(i => i.status === 'action_required').length, icon: AlertTriangle, color: '#ff8904', trend: 'Needs attention' },
+        { title: 'Processed', value: activeInquiries.filter(i => i.status === 'processed').length, icon: CheckCircle, color: '#30b357', trend: 'Completed' },
+        { title: 'Archived', value: archivedInquiries.length, icon: Archive, color: '#64748b', trend: 'All time' },
     ];
 
     return (
         <PageContainer>
             <PageHeader title="Inquiries Log" description="Manage and track all AI-processed incoming calls.">
-                <button className="flex items-center gap-2 px-6 py-3 rounded-lg bg-white/5 hover:bg-white/10 dark:bg-white/5 dark:hover:bg-white/10 bg-black/5 hover:bg-black/10 border border-white/10 dark:border-white/10 border-black/10 text-white text-sm font-medium transition-all duration-300 hover:scale-105">
+                <button
+                    onClick={() => setShowArchived(!showArchived)}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg border text-sm font-medium transition-all duration-300 hover:scale-105 ${
+                        showArchived
+                            ? 'bg-amber-500/20 border-amber-500/40 text-amber-400'
+                            : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+                    }`}
+                >
+                    <Archive size={16} />
+                    {showArchived ? 'Show Active' : 'Show Archive'}
+                    <span className="ml-1 px-2 py-0.5 rounded-full bg-white/10 text-xs">
+                        {showArchived ? activeInquiries.length : archivedInquiries.length}
+                    </span>
+                </button>
+                <button className="flex items-center gap-2 px-6 py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium transition-all duration-300 hover:scale-105">
                     <Filter size={16} /> Filter
                 </button>
                 <button className="px-6 py-3 rounded-lg shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white text-sm font-medium transition-all duration-300 hover:scale-105 border border-primary">
@@ -26,7 +95,7 @@ const Calls = () => {
             </PageHeader>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-white mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-white mb-10">
                 {stats.map((stat, idx) => (
                     <div key={idx} className="glass-panel rounded-xl border border-white/10 overflow-hidden min-h-[100px]">
                         <div className="p-4 flex flex-col h-full justify-between gap-3">
@@ -52,9 +121,9 @@ const Calls = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="glass-panel rounded-2xl overflow-hidden border border-white/10"
+                className="glass-panel rounded-2xl border border-white/10"
             >
-                <div className="overflow-x-auto p-4">
+                <div className="overflow-x-auto overflow-y-visible p-4">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-white/10 bg-black/20 text-[10px] uppercase tracking-wider text-gray-400">
@@ -62,25 +131,26 @@ const Calls = () => {
                                 <th className="px-4 py-2 font-semibold">Contact Info</th>
                                 <th className="px-4 py-2 font-semibold">Received</th>
                                 <th className="px-4 py-2 font-semibold">Intent</th>
-                                <th className="px-4 py-2 font-semibold text-right">Status</th>
+                                <th className="px-4 py-2 font-semibold">Status</th>
+                                <th className="px-4 py-2 font-semibold text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5 text-sm">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-20 text-center text-gray-500 italic">Accessing database...</td>
+                                    <td colSpan={6} className="px-8 py-20 text-center text-gray-500 italic">Accessing database...</td>
                                 </tr>
-                            ) : inquiries.length === 0 ? (
+                            ) : displayedInquiries.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-20 text-center text-gray-500">
+                                    <td colSpan={6} className="px-8 py-20 text-center text-gray-500">
                                         <div className="flex flex-col items-center gap-5">
                                             <div className="p-5 rounded-full bg-white/5"><PhoneIcon size={24} /></div>
-                                            <p>No inquiries found.</p>
+                                            <p>{showArchived ? 'No archived inquiries.' : 'No inquiries found.'}</p>
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
-                                inquiries.map((call) => (
+                                displayedInquiries.map((call) => (
                                     <tr key={call.id} className="group hover:bg-white/5 transition-colors cursor-default">
                                         <td className="px-4 py-2.5">
                                             <div className="flex items-center gap-3">
@@ -115,7 +185,7 @@ const Calls = () => {
                                                 <span className="text-[10px] text-gray-500 line-clamp-1 leading-tight">{call.description || 'No transcripts available..'}</span>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-2.5 text-right">
+                                        <td className="px-4 py-2.5">
                                             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-medium border ${call.status === 'new' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
                                                 call.status === 'action_required' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
                                                     call.status === 'processed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
@@ -125,6 +195,30 @@ const Calls = () => {
                                                 {call.status === 'action_required' && <AlertTriangle size={9} />}
                                                 <span className="capitalize">{call.status.replace('_', ' ')}</span>
                                             </span>
+                                        </td>
+                                        <td className="px-4 py-2.5 text-right">
+                                            <AnimatedDropdownMenu
+                                                options={showArchived ? [
+                                                    {
+                                                        label: "Unarchive",
+                                                        onClick: () => handleUnarchive(call),
+                                                        Icon: <ArchiveRestore className="h-4 w-4" />,
+                                                    },
+                                                ] : [
+                                                    {
+                                                        label: call.status === 'processed' ? "Mark Unprocessed" : "Mark Processed",
+                                                        onClick: () => handleToggleStatus(call),
+                                                        Icon: <CheckCircle className="h-4 w-4" />,
+                                                    },
+                                                    {
+                                                        label: "Archive",
+                                                        onClick: () => handleArchive(call),
+                                                        Icon: <Archive className="h-4 w-4" />,
+                                                    },
+                                                ]}
+                                            >
+                                                Actions
+                                            </AnimatedDropdownMenu>
                                         </td>
                                     </tr>
                                 ))

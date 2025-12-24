@@ -1,18 +1,86 @@
 import { motion } from 'framer-motion';
+import { useState, useMemo } from 'react';
 import { useCollection } from '../hooks/useCollection';
-import { User, Phone, MapPin } from 'lucide-react';
+import { User, Phone, MapPin, CheckCircle, Archive, ArchiveRestore, AlertCircle } from 'lucide-react';
 import type { Emergency } from '../types/schema';
-
+import { supabase } from '../lib/supabase';
 import { PageHeader, PageContainer } from '../components/layout/PageComponents';
+import { AnimatedDropdownMenu } from '../components/ui/animated-dropdown-menu';
 
 const Emergencies = () => {
-    const { data: emergencies, loading } = useCollection<Emergency>('emergencies', { orderBy: 'webhook_received_at' });
+    const { data: emergencies, loading, refetch } = useCollection<Emergency>('emergencies', { orderBy: 'webhook_received_at' });
+    const [showArchived, setShowArchived] = useState(false);
+
+    const activeEmergencies = useMemo(() => {
+        return emergencies?.filter(e => !e.archived) || [];
+    }, [emergencies]);
+
+    const archivedEmergencies = useMemo(() => {
+        return emergencies?.filter(e => e.archived) || [];
+    }, [emergencies]);
+
+    const displayedEmergencies = showArchived ? archivedEmergencies : activeEmergencies;
+
+    const handleToggleComplete = async (emergency: Emergency) => {
+        const newStatus = emergency.status === 'completed' ? 'active' : 'completed';
+
+        const { error } = await supabase
+            .from('emergencies')
+            .update({ status: newStatus })
+            .eq('id', emergency.id);
+
+        if (error) {
+            console.error('Error updating emergency:', error);
+        } else {
+            await refetch();
+        }
+    };
+
+    const handleArchive = async (emergency: Emergency) => {
+        const { error } = await supabase
+            .from('emergencies')
+            .update({ archived: true })
+            .eq('id', emergency.id);
+
+        if (error) {
+            console.error('Error archiving emergency:', error);
+        } else {
+            await refetch();
+        }
+    };
+
+    const handleUnarchive = async (emergency: Emergency) => {
+        const { error } = await supabase
+            .from('emergencies')
+            .update({ archived: false })
+            .eq('id', emergency.id);
+
+        if (error) {
+            console.error('Error unarchiving emergency:', error);
+        } else {
+            await refetch();
+        }
+    };
 
     return (
         <PageContainer>
             <PageHeader title="Emergencies" description="Critical incidents requiring immediate attention">
+                <button
+                    onClick={() => setShowArchived(!showArchived)}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg border text-sm font-medium transition-all duration-300 hover:scale-105 ${
+                        showArchived
+                            ? 'bg-amber-500/20 border-amber-500/40 text-amber-400'
+                            : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+                    }`}
+                >
+                    <Archive size={16} />
+                    {showArchived ? 'Show Active' : 'Show Archive'}
+                    <span className="ml-1 px-2 py-0.5 rounded-full bg-white/10 text-xs">
+                        {showArchived ? activeEmergencies.length : archivedEmergencies.length}
+                    </span>
+                </button>
                 <div className="bg-red-500/10 text-red-400 px-6 py-3 rounded-lg text-sm font-medium border border-red-500/20">
-                    High Priority: {emergencies.filter(e => e.severity === 'high' || e.severity === 'critical').length}
+                    High Priority: {activeEmergencies.filter(e => e.severity === 'high' || e.severity === 'critical').length}
                 </div>
                 <button className="px-6 py-3 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-medium shadow-lg shadow-red-900/20 transition-all duration-300 hover:scale-105 border border-red-700">
                     Action Plan
@@ -20,11 +88,12 @@ const Emergencies = () => {
             </PageHeader>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-white mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-white mb-8">
                 {[
-                    { title: 'Active Emergencies', value: emergencies.length, icon: Phone, color: '#ef4444', trend: 'Real-time' },
-                    { title: 'Critical', value: emergencies.filter(e => e.severity === 'critical').length, icon: User, color: '#ff8904', trend: 'High Priority' },
-                    { title: 'Resolved', value: emergencies.filter(e => e.severity === 'resolved').length, icon: MapPin, color: '#30b357', trend: 'Today' },
+                    { title: 'Active Emergencies', value: activeEmergencies.filter(e => e.status !== 'completed').length, icon: AlertCircle, color: '#ef4444', trend: 'Real-time' },
+                    { title: 'Critical', value: activeEmergencies.filter(e => e.severity === 'critical').length, icon: User, color: '#ff8904', trend: 'High Priority' },
+                    { title: 'Resolved', value: activeEmergencies.filter(e => e.status === 'completed').length, icon: CheckCircle, color: '#30b357', trend: 'Today' },
+                    { title: 'Archived', value: archivedEmergencies.length, icon: Archive, color: '#64748b', trend: 'All time' },
                 ].map((stat, idx) => (
 
 
@@ -50,9 +119,9 @@ const Emergencies = () => {
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="glass-panel rounded-2xl overflow-hidden border border-white/10"
+                className="glass-panel rounded-2xl border border-white/10"
             >
-                <div className="overflow-x-auto p-2">
+                <div className="overflow-x-auto overflow-y-visible p-2">
                     <table className="w-full text-left">
                         <thead className="bg-white/5 text-gray-400 text-xs uppercase tracking-wider">
                             <tr>
@@ -61,20 +130,23 @@ const Emergencies = () => {
                                 <th className="px-4 py-2 font-semibold text-xs">Description</th>
                                 <th className="px-4 py-2 font-semibold text-xs">Location</th>
                                 <th className="px-4 py-2 font-semibold text-xs">Time</th>
-                                <th className="px-4 py-2 font-semibold text-xs">Action</th>
+                                <th className="px-4 py-2 font-semibold text-xs">Status</th>
+                                <th className="px-4 py-2 font-semibold text-xs text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-16 text-center text-gray-500">Loading emergencies...</td>
+                                    <td colSpan={7} className="px-6 py-16 text-center text-gray-500">Loading emergencies...</td>
                                 </tr>
-                            ) : emergencies.length === 0 ? (
+                            ) : displayedEmergencies.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-16 text-center text-gray-500">No active emergencies.</td>
+                                    <td colSpan={7} className="px-6 py-16 text-center text-gray-500">
+                                        {showArchived ? 'No archived emergencies.' : 'No active emergencies.'}
+                                    </td>
                                 </tr>
                             ) : (
-                                emergencies.map((emergency) => (
+                                displayedEmergencies.map((emergency) => (
                                     <tr key={emergency.id} className="hover:bg-white/5 transition-colors">
                                         <td className="px-4 py-2.5">
                                             <div className="flex flex-col gap-0.5">
@@ -111,9 +183,37 @@ const Emergencies = () => {
                                             {new Date(emergency.webhook_received_at).toLocaleString()}
                                         </td>
                                         <td className="px-4 py-2.5">
-                                            <button className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white text-[10px] rounded transition-colors border border-white/10">
-                                                Details
-                                            </button>
+                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                                                emergency.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                                                emergency.status === 'resolved' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                                'bg-red-500/10 text-red-400 border-red-500/20'
+                                            }`}>
+                                                {emergency.status || 'active'}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-2.5 text-right">
+                                            <AnimatedDropdownMenu
+                                                options={showArchived ? [
+                                                    {
+                                                        label: "Unarchive",
+                                                        onClick: () => handleUnarchive(emergency),
+                                                        Icon: <ArchiveRestore className="h-4 w-4" />,
+                                                    },
+                                                ] : [
+                                                    {
+                                                        label: emergency.status === 'completed' ? "Mark Active" : "Mark Complete",
+                                                        onClick: () => handleToggleComplete(emergency),
+                                                        Icon: <CheckCircle className="h-4 w-4" />,
+                                                    },
+                                                    {
+                                                        label: "Archive",
+                                                        onClick: () => handleArchive(emergency),
+                                                        Icon: <Archive className="h-4 w-4" />,
+                                                    },
+                                                ]}
+                                            >
+                                                Actions
+                                            </AnimatedDropdownMenu>
                                         </td>
                                     </tr>
                                 ))
