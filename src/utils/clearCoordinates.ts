@@ -14,7 +14,8 @@ export const clearAppointmentCoordinates = async () => {
             longitude: null,
             geocoded_at: null
         })
-        .not('latitude', 'is', null);
+        .not('latitude', 'is', null)
+        .select();
 
     if (error) {
         console.error('[Clear Coordinates] Error:', error);
