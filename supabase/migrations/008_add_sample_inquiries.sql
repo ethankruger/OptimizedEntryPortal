@@ -11,6 +11,10 @@ INSERT INTO inquiries (
     description,
     status,
     priority,
+    follow_up_required,
+    follow_up_date,
+    follow_up_method,
+    outcome,
     created_at
 ) VALUES
     (
@@ -22,6 +26,10 @@ INSERT INTO inquiries (
         'Calling to schedule a routine maintenance check for HVAC system. Mentioned strange noise from the unit.',
         'new',
         'medium',
+        true,
+        NOW() + INTERVAL '2 days',
+        'phone',
+        null,
         NOW() - INTERVAL '2 hours'
     ),
     (
@@ -33,6 +41,10 @@ INSERT INTO inquiries (
         'Emergency call about complete heating system failure. Temperature dropping rapidly in building.',
         'action_required',
         'high',
+        true,
+        NOW() + INTERVAL '4 hours',
+        'phone',
+        null,
         NOW() - INTERVAL '30 minutes'
     ),
     (
@@ -44,6 +56,10 @@ INSERT INTO inquiries (
         'Interested in getting a quote for installing a new commercial refrigeration system.',
         'new',
         'medium',
+        true,
+        NOW() + INTERVAL '3 days',
+        'email',
+        null,
         NOW() - INTERVAL '5 hours'
     ),
     (
@@ -55,6 +71,10 @@ INSERT INTO inquiries (
         'Following up on previous service appointment. Very satisfied with work, wants to schedule annual maintenance contract.',
         'processed',
         'low',
+        false,
+        null,
+        null,
+        'Scheduled annual maintenance contract - converted to ongoing customer',
         NOW() - INTERVAL '1 day'
     ),
     (
@@ -64,8 +84,12 @@ INSERT INTO inquiries (
         '+1 (555) 432-1098',
         'Service Request',
         'Air conditioning not cooling properly. Requesting same-day or next-day service if possible.',
-        'new',
-        'medium',
+        'action_required',
+        'high',
+        true,
+        NOW() + INTERVAL '1 day',
+        'phone',
+        null,
         NOW() - INTERVAL '3 hours'
     ),
     (
@@ -77,6 +101,10 @@ INSERT INTO inquiries (
         'Called asking about energy-efficient HVAC upgrade options and available rebates.',
         'new',
         'low',
+        true,
+        NOW() + INTERVAL '1 week',
+        'email',
+        null,
         NOW() - INTERVAL '6 hours'
     ),
     (
@@ -86,8 +114,12 @@ INSERT INTO inquiries (
         '+1 (555) 567-8901',
         'Emergency',
         'Water leak detected near HVAC unit. Needs immediate attention.',
-        'action_required',
+        'processed',
         'high',
+        false,
+        null,
+        null,
+        'Emergency service completed - leak fixed and unit inspected',
         NOW() - INTERVAL '45 minutes'
     ),
     (
@@ -99,6 +131,10 @@ INSERT INTO inquiries (
         'Scheduling preventive maintenance for multiple units in commercial building.',
         'processed',
         'medium',
+        true,
+        NOW() + INTERVAL '1 month',
+        'phone',
+        'Appointment scheduled for next week - quarterly maintenance plan discussed',
         NOW() - INTERVAL '2 days'
     ),
     (
@@ -108,8 +144,12 @@ INSERT INTO inquiries (
         '+1 (555) 234-5670',
         'Quote Request',
         'New construction project. Needs quote for complete HVAC installation for 3-story office building.',
-        'new',
+        'action_required',
         'medium',
+        true,
+        NOW() + INTERVAL '2 days',
+        'email',
+        null,
         NOW() - INTERVAL '4 hours'
     ),
     (
@@ -121,5 +161,39 @@ INSERT INTO inquiries (
         'Questions about thermostat programming and smart HVAC control systems.',
         'processed',
         'low',
+        false,
+        null,
+        null,
+        'Provided information via email - customer satisfied with response',
         NOW() - INTERVAL '1 day'
+    ),
+    (
+        '55daefad-b5f8-43bb-ad1e-0b07e0688237',
+        'Maria Gonzales',
+        'maria.gonzales@email.com',
+        '+1 (555) 111-2222',
+        'Service Request',
+        'Annual HVAC inspection needed. Customer is a returning client from last year.',
+        'new',
+        'medium',
+        true,
+        NOW() + INTERVAL '5 days',
+        'phone',
+        null,
+        NOW() - INTERVAL '8 hours'
+    ),
+    (
+        '55daefad-b5f8-43bb-ad1e-0b07e0688237',
+        'Kevin O''Brien',
+        'kevin.obrien@email.com',
+        '+1 (555) 333-4444',
+        'Emergency',
+        'Commercial freezer unit down. Restaurant losing inventory. Urgent service needed.',
+        'action_required',
+        'high',
+        true,
+        NOW() + INTERVAL '2 hours',
+        'phone',
+        null,
+        NOW() - INTERVAL '1 hour'
     );
