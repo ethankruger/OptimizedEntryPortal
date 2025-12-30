@@ -4,13 +4,13 @@ import type { Inquiry, Appointment, Emergency, CallRecording } from '../types/sc
 import { PageHeader, PageContainer } from '../components/layout/PageComponents';
 import { OverviewChart } from '../components/charts/OverviewChart';
 import { DistributionChart } from '../components/charts/DistributionChart';
-import { Phone, Calendar, AlertCircle, ArrowUpRight, Activity, Users, Clock, Mic } from 'lucide-react';
+import { Phone, AlertCircle, ArrowUpRight, Activity, Users, Clock } from 'lucide-react';
 
 const Dashboard = () => {
-    const { data: inquiries, loading: loadingInquiries } = useCollection<Inquiry>('inquiries');
-    const { data: emergencies, loading: loadingEmergencies } = useCollection<Emergency>('emergencies', { orderBy: 'webhook_received_at' });
-    const { data: appointments, loading: loadingAppointments } = useCollection<Appointment>('appointments');
-    const { data: recordings, loading: loadingRecordings } = useCollection<CallRecording>('call_recordings');
+    const { data: inquiries } = useCollection<Inquiry>('inquiries');
+    const { data: emergencies } = useCollection<Emergency>('emergencies', { orderBy: 'webhook_received_at' });
+    const { data: appointments } = useCollection<Appointment>('appointments');
+    const { data: recordings } = useCollection<CallRecording>('call_recordings');
 
     // Chart Time Range State
     const [timeRange, setTimeRange] = useState<'12m' | '30d'>('12m');
@@ -142,7 +142,7 @@ const Dashboard = () => {
 
             case 'chart-overview':
                 // Filter data based on selected type
-                let chartData = [];
+                let chartData: Array<{ created_at: string }> = [];
                 if (chartDataType === 'all') {
                     chartData = [
                         ...inquiries.map(i => ({ created_at: i.created_at })),
