@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useMemo } from 'react';
 import { useCollection } from '../hooks/useCollection';
-import { Clock, User, Phone as PhoneIcon, CheckCircle, AlertTriangle, Filter, Archive, ArchiveRestore } from 'lucide-react';
+import { Clock, User, Phone as PhoneIcon, CheckCircle, AlertTriangle, Filter, Archive, ArchiveRestore, PhoneCall, Mail, CalendarCheck } from 'lucide-react';
 import type { Inquiry } from '../types/schema';
 import { supabase } from '../lib/supabase';
 import { PageHeader, PageContainer } from '../components/layout/PageComponents';
@@ -57,6 +57,55 @@ const Calls = () => {
 
         if (error) {
             console.error('Error unarchiving inquiry:', error);
+        } else {
+            await refetch();
+        }
+    };
+
+    const handleMarkFollowUpDone = async (inquiry: Inquiry) => {
+        const { error } = await supabase
+            .from('inquiries')
+            .update({
+                follow_up_required: false,
+                outcome: `Follow-up completed on ${new Date().toLocaleDateString()}`
+            })
+            .eq('id', inquiry.id);
+
+        if (error) {
+            console.error('Error marking follow-up as done:', error);
+        } else {
+            await refetch();
+        }
+    };
+
+    const handleScheduleFollowUp = async (inquiry: Inquiry, method: 'phone' | 'email') => {
+        const followUpDate = new Date();
+        followUpDate.setDate(followUpDate.getDate() + 3); // Schedule 3 days from now
+
+        const { error } = await supabase
+            .from('inquiries')
+            .update({
+                follow_up_required: true,
+                follow_up_date: followUpDate.toISOString(),
+                follow_up_method: method
+            })
+            .eq('id', inquiry.id);
+
+        if (error) {
+            console.error('Error scheduling follow-up:', error);
+        } else {
+            await refetch();
+        }
+    };
+
+    const handleMarkActionRequired = async (inquiry: Inquiry) => {
+        const { error } = await supabase
+            .from('inquiries')
+            .update({ status: 'action_required' })
+            .eq('id', inquiry.id);
+
+        if (error) {
+            console.error('Error marking as action required:', error);
         } else {
             await refetch();
         }
@@ -210,6 +259,27 @@ const Calls = () => {
                                                         onClick: () => handleToggleStatus(call),
                                                         Icon: <CheckCircle className="h-4 w-4" />,
                                                     },
+                                                    ...(call.status !== 'action_required' ? [{
+                                                        label: "Mark Action Required",
+                                                        onClick: () => handleMarkActionRequired(call),
+                                                        Icon: <AlertTriangle className="h-4 w-4" />,
+                                                    }] : []),
+                                                    ...(call.follow_up_required ? [{
+                                                        label: "Mark Follow-up Done",
+                                                        onClick: () => handleMarkFollowUpDone(call),
+                                                        Icon: <CalendarCheck className="h-4 w-4" />,
+                                                    }] : [
+                                                        {
+                                                            label: "Schedule Phone Follow-up",
+                                                            onClick: () => handleScheduleFollowUp(call, 'phone'),
+                                                            Icon: <PhoneCall className="h-4 w-4" />,
+                                                        },
+                                                        {
+                                                            label: "Schedule Email Follow-up",
+                                                            onClick: () => handleScheduleFollowUp(call, 'email'),
+                                                            Icon: <Mail className="h-4 w-4" />,
+                                                        }
+                                                    ]),
                                                     {
                                                         label: "Archive",
                                                         onClick: () => handleArchive(call),
