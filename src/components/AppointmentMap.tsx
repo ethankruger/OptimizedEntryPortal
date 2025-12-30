@@ -23,6 +23,20 @@ const getMarkerColor = (appointment: Appointment): string => {
 
 export const AppointmentMap: React.FC<AppointmentMapProps> = ({ appointments }) => {
   const [selectedAppointment, setSelectedAppointment] = React.useState<Appointment | null>(null);
+  const [visibleFilters, setVisibleFilters] = React.useState({
+    scheduled: true,
+    completed: true,
+    emergency: true,
+    pending: true
+  });
+
+  // Toggle filter visibility
+  const toggleFilter = (filterType: keyof typeof visibleFilters) => {
+    setVisibleFilters(prev => ({
+      ...prev,
+      [filterType]: !prev[filterType]
+    }));
+  };
 
   // Handle ESC key to close InfoWindow
   React.useEffect(() => {
@@ -40,11 +54,23 @@ export const AppointmentMap: React.FC<AppointmentMapProps> = ({ appointments }) 
 
   // Filter appointments that have coordinates
   const mappableAppointments = useMemo(() => {
-    return appointments.filter(apt =>
-      apt.latitude !== null && apt.latitude !== undefined &&
-      apt.longitude !== null && apt.longitude !== undefined
-    );
-  }, [appointments]);
+    return appointments.filter(apt => {
+      // First check if it has coordinates
+      if (apt.latitude === null || apt.latitude === undefined ||
+        apt.longitude === null || apt.longitude === undefined) {
+        return false;
+      }
+
+      // Then check if it matches the active filters
+      if (apt.status === 'completed' && !visibleFilters.completed) return false;
+      if (apt.status === 'scheduled' && !visibleFilters.scheduled) return false;
+      if ((apt.urgency_level === 'emergency' || apt.urgency_level === 'urgent') && !visibleFilters.emergency) return false;
+      if (apt.status !== 'completed' && apt.status !== 'scheduled' &&
+        apt.urgency_level !== 'emergency' && apt.urgency_level !== 'urgent' && !visibleFilters.pending) return false;
+
+      return true;
+    });
+  }, [appointments, visibleFilters]);
 
   // Calculate map center and zoom based on appointments
   const { center, zoom } = useMemo(() => {
@@ -117,26 +143,58 @@ export const AppointmentMap: React.FC<AppointmentMapProps> = ({ appointments }) 
 
   return (
     <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden relative" style={{ height: '500px' }}>
-      {/* Color Legend */}
-      <div className="absolute top-4 left-4 z-10 glass-panel rounded-lg border border-white/10 p-3 shadow-lg">
-        <h4 className="text-xs font-semibold text-white mb-2 uppercase tracking-wide">Pin Colors</h4>
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm"></div>
-            <span className="text-xs text-gray-300">Scheduled</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm"></div>
-            <span className="text-xs text-gray-300">Completed</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow-sm"></div>
-            <span className="text-xs text-gray-300">Emergency</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-amber-500 border-2 border-white shadow-sm"></div>
-            <span className="text-xs text-gray-300">Pending</span>
-          </div>
+      {/* Interactive Filter Legend */}
+      <div className="absolute bottom-4 left-4 z-10 glass-panel rounded-lg border border-white/10 p-4 shadow-lg">
+        <h4 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Filter Pins</h4>
+        <div className="space-y-2.5">
+          <button
+            onClick={() => toggleFilter('scheduled')}
+            className={`w-full flex items-center gap-3 px-2 py-1.5 rounded-lg transition-all ${visibleFilters.scheduled
+                ? 'bg-blue-500/20 hover:bg-blue-500/30'
+                : 'bg-gray-500/10 hover:bg-gray-500/20 opacity-50'
+              }`}
+          >
+            <div className={`w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm transition-opacity ${visibleFilters.scheduled ? 'opacity-100' : 'opacity-40'
+              }`}></div>
+            <span className="text-sm text-gray-300 flex-1 text-left">Scheduled</span>
+            <span className="text-xs text-gray-400">{visibleFilters.scheduled ? '✓' : '✕'}</span>
+          </button>
+          <button
+            onClick={() => toggleFilter('completed')}
+            className={`w-full flex items-center gap-3 px-2 py-1.5 rounded-lg transition-all ${visibleFilters.completed
+                ? 'bg-green-500/20 hover:bg-green-500/30'
+                : 'bg-gray-500/10 hover:bg-gray-500/20 opacity-50'
+              }`}
+          >
+            <div className={`w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-sm transition-opacity ${visibleFilters.completed ? 'opacity-100' : 'opacity-40'
+              }`}></div>
+            <span className="text-sm text-gray-300 flex-1 text-left">Completed</span>
+            <span className="text-xs text-gray-400">{visibleFilters.completed ? '✓' : '✕'}</span>
+          </button>
+          <button
+            onClick={() => toggleFilter('emergency')}
+            className={`w-full flex items-center gap-3 px-2 py-1.5 rounded-lg transition-all ${visibleFilters.emergency
+                ? 'bg-red-500/20 hover:bg-red-500/30'
+                : 'bg-gray-500/10 hover:bg-gray-500/20 opacity-50'
+              }`}
+          >
+            <div className={`w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-sm transition-opacity ${visibleFilters.emergency ? 'opacity-100' : 'opacity-40'
+              }`}></div>
+            <span className="text-sm text-gray-300 flex-1 text-left">Emergency</span>
+            <span className="text-xs text-gray-400">{visibleFilters.emergency ? '✓' : '✕'}</span>
+          </button>
+          <button
+            onClick={() => toggleFilter('pending')}
+            className={`w-full flex items-center gap-3 px-2 py-1.5 rounded-lg transition-all ${visibleFilters.pending
+                ? 'bg-amber-500/20 hover:bg-amber-500/30'
+                : 'bg-gray-500/10 hover:bg-gray-500/20 opacity-50'
+              }`}
+          >
+            <div className={`w-4 h-4 rounded-full bg-amber-500 border-2 border-white shadow-sm transition-opacity ${visibleFilters.pending ? 'opacity-100' : 'opacity-40'
+              }`}></div>
+            <span className="text-sm text-gray-300 flex-1 text-left">Pending</span>
+            <span className="text-xs text-gray-400">{visibleFilters.pending ? '✓' : '✕'}</span>
+          </button>
         </div>
       </div>
 
@@ -256,8 +314,8 @@ export const AppointmentMap: React.FC<AppointmentMapProps> = ({ appointments }) 
                 {/* Footer with status and hint */}
                 <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                   <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${selectedAppointment.status === 'completed' ? 'bg-green-100 text-green-800 border border-green-200' :
-                      selectedAppointment.status === 'scheduled' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-                        'bg-amber-100 text-amber-800 border border-amber-200'
+                    selectedAppointment.status === 'scheduled' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                      'bg-amber-100 text-amber-800 border border-amber-200'
                     }`}>
                     {selectedAppointment.status === 'completed' ? '✓ Completed' :
                       selectedAppointment.status === 'scheduled' ? '📅 Scheduled' :

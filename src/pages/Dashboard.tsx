@@ -243,6 +243,28 @@ const Dashboard = () => {
                 );
 
             case 'status-system':
+                // Calculate real system metrics
+                const now = new Date();
+                const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+                const recentActivity = inquiries?.filter(i => new Date(i.created_at) > oneHourAgo).length || 0;
+                const aiEngineStatus = recentActivity > 0 ? 'Processing' : 'Operational';
+
+                // Calculate total unique customers as "active agents"
+                const uniqueCustomers = new Set([
+                    ...(inquiries || []).map(i => i.customer_email || i.customer_phone),
+                    ...(appointments || []).map(a => a.customer_email || a.customer_phone)
+                ].filter(Boolean));
+                const activeCount = uniqueCustomers.size;
+
+                // Calculate uptime based on oldest inquiry
+                const oldestInquiry = inquiries && inquiries.length > 0
+                    ? new Date(Math.min(...inquiries.map(i => new Date(i.created_at).getTime())))
+                    : new Date();
+                const uptimeMs = now.getTime() - oldestInquiry.getTime();
+                const uptimeDays = Math.floor(uptimeMs / (1000 * 60 * 60 * 24));
+                const uptimeHours = Math.floor((uptimeMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const uptimeStr = uptimeDays > 0 ? `${uptimeDays}d ${uptimeHours}h` : `${uptimeHours}h`;
+
                 return (
                     <div className="p-5 h-full">
                         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 leading-tight">System Status</h3>
@@ -252,7 +274,7 @@ const Dashboard = () => {
                                     <Activity className="text-[#ff8904] flex-shrink-0" size={16} />
                                     <div className="min-w-0 flex-1">
                                         <div className="text-sm font-medium text-[var(--text-primary)] leading-tight">AI Engine</div>
-                                        <div className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-tight">Operational</div>
+                                        <div className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-tight">{aiEngineStatus}</div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -264,25 +286,23 @@ const Dashboard = () => {
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                     <Users className="text-[#ff8904] flex-shrink-0" size={16} />
                                     <div className="min-w-0 flex-1">
-                                        <div className="text-sm font-medium text-[var(--text-primary)] leading-tight">Active Agents</div>
-                                        <div className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-tight">3 online now</div>
+                                        <div className="text-sm font-medium text-[var(--text-primary)] leading-tight">Total Customers</div>
+                                        <div className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-tight">{activeCount} unique</div>
                                     </div>
                                 </div>
-                                <div className="flex -space-x-1.5 flex-shrink-0">
-                                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-primary to-secondary border-2 border-[var(--bg-primary)]" />
-                                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-secondary to-primary border-2 border-[var(--bg-primary)]" />
-                                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-primary to-secondary border-2 border-[var(--bg-primary)] flex items-center justify-center text-[8px] text-[var(--text-primary)]">+1</div>
+                                <div className="flex items-center justify-center flex-shrink-0">
+                                    <span className="text-lg font-bold text-[var(--text-primary)]">{activeCount}</span>
                                 </div>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 dark:bg-white/5 bg-black/5 border border-white/5 dark:border-white/5 border-black/10 gap-3">
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                     <Clock className="text-[#ff8904] flex-shrink-0" size={16} />
                                     <div className="min-w-0 flex-1">
-                                        <div className="text-sm font-medium text-[var(--text-primary)] leading-tight">Uptime</div>
-                                        <div className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-tight">99.9% this month</div>
+                                        <div className="text-sm font-medium text-[var(--text-primary)] leading-tight">System Active</div>
+                                        <div className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-tight">Since first inquiry</div>
                                     </div>
                                 </div>
-                                <span className="text-[10px] text-[var(--text-secondary)] font-mono flex-shrink-0 leading-tight">24d 13h</span>
+                                <span className="text-[10px] text-[var(--text-secondary)] font-mono flex-shrink-0 leading-tight">{uptimeStr}</span>
                             </div>
                         </div>
                     </div>

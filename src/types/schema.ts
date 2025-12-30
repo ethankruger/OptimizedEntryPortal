@@ -127,3 +127,26 @@ export interface StripeAccount {
     connected_at: string;
     updated_at: string;
 }
+
+export interface CallRecording {
+    id: string;
+    user_id: string;
+    call_id?: string;
+    appointment_id?: string;
+    inquiry_id?: string;
+    customer_name?: string;
+    customer_phone?: string;
+    call_duration_seconds?: number;
+    call_started_at?: string;
+    call_ended_at?: string;
+    audio_url: string;
+    audio_file_size?: number;
+    audio_format?: string;
+    transcript?: string;
+    transcript_summary?: string;
+    elevenlabs_conversation_id?: string;
+    elevenlabs_agent_id?: string;
+    call_metadata?: any;
+    created_at: string;
+    updated_at: string;
+}

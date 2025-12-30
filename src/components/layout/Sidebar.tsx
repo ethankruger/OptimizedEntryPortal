@@ -8,11 +8,8 @@ import {
     Phone,
     Settings,
     User2,
-    Moon,
-    Sun,
 } from "lucide-react"
 import { useAuth } from "../../context/AuthContext"
-import { useTheme } from "../../context/ThemeContext"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,7 +21,6 @@ import PortalLogo from "../../assets/PortalLogo.png"
 
 export function Sidebar() {
     const { user, signOut } = useAuth()
-    const { theme, toggleTheme } = useTheme()
     const navigate = useNavigate()
     const location = useLocation()
 
@@ -91,23 +87,6 @@ export function Sidebar() {
             <div className="p-3 mt-auto border-t border-white/5">
                 <div className="flex flex-col gap-1">
                     {/* Theme Toggle */}
-                    <button
-                        onClick={toggleTheme}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group mb-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5 dark:hover:bg-white/5 hover:bg-black/5"
-                    >
-                        {theme === 'dark' ? (
-                            <>
-                                <Sun size={18} className="text-orange-400 group-hover:text-orange-300" />
-                                <span className="group-hover:text-orange-300">Light Mode</span>
-                            </>
-                        ) : (
-                            <>
-                                <Moon size={18} className="text-purple-400 group-hover:text-purple-300" />
-                                <span className="group-hover:text-purple-300">Dark Mode</span>
-                            </>
-                        )}
-                    </button>
-
                     <button
                         onClick={() => navigate('/settings')}
                         className={cn(
