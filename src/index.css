@@ -26,8 +26,9 @@
 
 /* Dark Theme (Default) */
 .dark {
-  /* Richer Dark Theme Palette */
-  --bg-primary: #030014;
+  /* Richer Dark Theme Palette with Orange hue */
+  --bg-primary: #0a0604;
+  /* Dark with orange undertone */
 
   /* Sidebar Variables - Dark */
   --sidebar-background: 240 5.9% 10%;
@@ -38,79 +39,94 @@
   --sidebar-accent-foreground: 240 4.8% 95.9%;
   --sidebar-border: 240 3.7% 15.9%;
   --sidebar-ring: 217.2 91.2% 59.8%;
-  /* Deep space blue-black */
-  --bg-secondary: #0f172a;
-  /* Slate/Navy tone */
-  --bg-card: rgba(30, 41, 59, 0.4);
+
+  --bg-secondary: #1a0f0a;
+  /* Dark orange-brown tone */
+  --bg-card: rgba(42, 24, 15, 0.4);
+  /* Orange-tinted card background */
 
   --text-primary: #ffffff;
-  --text-secondary: #a8b3cf;
-  --text-muted: #6b7a99;
+  --text-secondary: #cfb3a8;
+  /* Orange-tinted secondary text */
+  --text-muted: #99766b;
+  /* Orange-tinted muted text */
 
-  /* Vibrant Accents */
-  --accent-primary: #818cf8;
-  /* Indigo 400 */
-  --accent-secondary: #c084fc;
-  /* Purple 400 */
-  --accent-tertiary: #38bdf8;
-  /* Sky 400 */
-
-  /* Theme Colors (Dynamic) */
-  --color-primary: #ea580c;
+  /* Vibrant Accents - Orange theme */
+  --accent-primary: #ff8904;
+  /* Primary Orange */
+  --accent-secondary: #ea580c;
   /* Dark Orange */
-  --color-secondary: #fdba74;
-  /* Orange 300 */
+  --accent-tertiary: #fdba74;
+  /* Light Orange */
+
+  /* Theme Colors (Dynamic) - Orange */
+  --color-primary: #ff8904;
+  /* Primary Orange */
+  --color-secondary: #ea580c;
+  /* Dark Orange */
   --color-primary-foreground: #ffffff;
   --color-secondary-foreground: #ffffff;
 
-  --success: #34d399;
+  --success: #ff8904;
+  /* Orange instead of green */
   --warning: #fbbf24;
   --danger: #f87171;
 
-  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
-  --glass-highlight: 1px solid rgba(255, 255, 255, 0.18);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  --glass-border: 1px solid rgba(255, 137, 4, 0.1);
+  /* Orange-tinted border */
+  --glass-highlight: 1px solid rgba(255, 137, 4, 0.18);
+  /* Orange-tinted highlight */
+  --glass-shadow: 0 8px 32px 0 rgba(255, 137, 4, 0.15);
+  /* Orange-tinted shadow */
 
   /* Animated Component Variables - Dark */
-  --skeleton: hsl(218, 36%, 16%);
-  /* --border is typically handled by sidebar border or generic border */
-  --btn-border: hsl(217deg, 32.6%, 17.5%);
-  --input: hsl(219, 63%, 16%);
+  --skeleton: hsl(25, 36%, 16%);
+  /* Orange-tinted skeleton */
+  --btn-border: hsl(25deg, 32.6%, 17.5%);
+  /* Orange-tinted button border */
+  --input: hsl(25, 63%, 16%);
+  /* Orange-tinted input */
 }
 
 /* Light Theme */
 .light {
-  --bg-primary: #f8f9fa;
-  /* Light gray background */
+  --bg-primary: #fef9f5;
+  /* Light with orange undertone */
   --bg-secondary: #ffffff;
   /* Pure white */
   --bg-card: rgba(255, 255, 255, 0.9);
 
-  --text-primary: #1a1a1a;
-  --text-secondary: #4a5568;
-  --text-muted: #718096;
+  --text-primary: #0f1419;
+  --text-secondary: #2d3748;
+  --text-muted: #4a5568;
 
-  /* Brand Colors - Green and Orange */
-  --accent-primary: #30b357;
-  /* Primary Green */
-  --accent-secondary: #ff8904;
-  /* Secondary Orange */
-  --accent-tertiary: #2d9cdb;
-  /* Sky blue */
+  /* Brand Colors - Orange and Green */
+  --accent-primary: #ff8904;
+  /* Primary Orange */
+  --accent-secondary: #30b357;
+  /* Secondary Green */
+  --accent-tertiary: #ea580c;
+  /* Dark Orange */
 
   /* Theme Colors (Dynamic) */
-  --color-primary: #30b357;
-  --color-secondary: #ff8904;
+  --color-primary: #ff8904;
+  /* Primary Orange */
+  --color-secondary: #30b357;
+  /* Secondary Green */
   --color-primary-foreground: #ffffff;
   --color-secondary-foreground: #ffffff;
 
-  --success: #30b357;
-  --warning: #ff8904;
+  --success: #ff8904;
+  /* Orange instead of green */
+  --warning: #fbbf24;
   --danger: #ef4444;
 
-  --glass-border: 1px solid rgba(0, 0, 0, 0.1);
-  --glass-highlight: 1px solid rgba(0, 0, 0, 0.15);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  --glass-border: 1px solid rgba(255, 137, 4, 0.15);
+  /* Orange-tinted border */
+  --glass-highlight: 1px solid rgba(255, 137, 4, 0.25);
+  /* Orange-tinted highlight */
+  --glass-shadow: 0 8px 32px 0 rgba(255, 137, 4, 0.12);
+  /* Orange-tinted shadow */
 }
 
 
@@ -129,18 +145,20 @@ body {
   color-scheme: dark light;
 }
 
-/* Dark theme background gradient */
+/* Dark theme background gradient - Orange */
 .dark body {
   background-image:
-    radial-gradient(circle at 15% 50%, rgba(234, 88, 12, 0.08) 0%, transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(253, 186, 116, 0.08) 0%, transparent 25%);
+    radial-gradient(circle at 15% 50%, rgba(255, 137, 4, 0.12) 0%, transparent 30%),
+    radial-gradient(circle at 85% 30%, rgba(234, 88, 12, 0.10) 0%, transparent 30%),
+    radial-gradient(circle at 50% 80%, rgba(253, 186, 116, 0.08) 0%, transparent 25%);
 }
 
-/* Light theme background gradient - using brand colors */
+/* Light theme background gradient - Orange theme */
 .light body {
   background-image:
-    radial-gradient(circle at 15% 50%, rgba(48, 179, 87, 0.05) 0%, transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(255, 137, 4, 0.05) 0%, transparent 25%);
+    radial-gradient(circle at 15% 50%, rgba(255, 137, 4, 0.08) 0%, transparent 30%),
+    radial-gradient(circle at 85% 30%, rgba(234, 88, 12, 0.06) 0%, transparent 30%),
+    radial-gradient(circle at 50% 80%, rgba(253, 186, 116, 0.05) 0%, transparent 25%);
 }
 
 .g-button {
@@ -180,13 +198,24 @@ h6 {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
+/* Dark theme scrollbar */
+.dark ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Light theme scrollbar */
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
 }
 
 /* Premium Utilities */

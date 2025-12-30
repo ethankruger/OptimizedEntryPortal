@@ -92,7 +92,7 @@ export function Invoices() {
           <button
             onClick={() => handleCreateInvoice()}
             disabled={!isStripeConnected}
-            className="px-6 py-3 rounded-lg shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-secondary hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-all duration-300 hover:scale-105 border border-primary flex items-center gap-2"
+            className="px-6 py-3 rounded-lg shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-secondary hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-[var(--color-primary-foreground)] text-sm font-medium transition-all duration-300 hover:scale-105 border border-primary flex items-center gap-2"
             title={!isStripeConnected ? 'Connect Stripe to create invoices' : 'Create a new invoice'}
           >
             <Plus size={16} />
@@ -111,88 +111,88 @@ export function Invoices() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-8 text-white mb-10">
-        <div className="glass-panel rounded-xl border border-white/10 overflow-hidden min-h-[100px]">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-10">
+        <div className="glass-panel rounded-xl border border-white/10 dark:border-white/10 border-black/10 overflow-hidden min-h-[100px]">
           <div className="p-4 flex flex-col h-full justify-between gap-3">
             <div className="flex justify-between items-start gap-3">
-              <span className="text-xs font-medium text-gray-400 leading-tight">Total Invoices</span>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-white/80 flex-shrink-0">
+              <span className="text-xs font-medium text-[var(--text-muted)] leading-tight">Total Invoices</span>
+              <div className="p-2 rounded-lg bg-white/5 dark:bg-white/5 bg-black/5 border border-white/5 dark:border-white/5 border-black/10 text-[var(--text-secondary)] flex-shrink-0">
                 <FileText size={18} />
               </div>
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold font-display tracking-tight text-white leading-none">{stats.total}</h3>
-              <span className="inline-flex items-center text-[10px] font-semibold text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/5 w-fit">
+              <h3 className="text-2xl font-bold font-display tracking-tight text-[var(--text-primary)] leading-none">{stats.total}</h3>
+              <span className="inline-flex items-center text-[10px] font-semibold text-[var(--text-muted)] bg-white/5 dark:bg-white/5 bg-black/5 px-3 py-1 rounded-full border border-white/5 dark:border-white/5 border-black/10 w-fit">
                 All time
               </span>
             </div>
           </div>
         </div>
 
-        <div className="glass-panel rounded-xl border border-white/10 overflow-hidden min-h-[100px]">
+        <div className="glass-panel rounded-xl border border-white/10 dark:border-white/10 border-black/10 overflow-hidden min-h-[100px]">
           <div className="p-4 flex flex-col h-full justify-between gap-3">
             <div className="flex justify-between items-start gap-3">
-              <span className="text-xs font-medium text-gray-400 leading-tight">Draft</span>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-white/80 flex-shrink-0">
+              <span className="text-xs font-medium text-[var(--text-muted)] leading-tight">Draft</span>
+              <div className="p-2 rounded-lg bg-white/5 dark:bg-white/5 bg-black/5 border border-white/5 dark:border-white/5 border-black/10 text-[var(--text-secondary)] flex-shrink-0">
                 <Clock size={18} />
               </div>
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold font-display tracking-tight text-white leading-none">{stats.draft}</h3>
-              <span className="inline-flex items-center text-[10px] font-semibold text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/5 w-fit">
+              <h3 className="text-2xl font-bold font-display tracking-tight text-[var(--text-primary)] leading-none">{stats.draft}</h3>
+              <span className="inline-flex items-center text-[10px] font-semibold text-[var(--text-muted)] bg-white/5 dark:bg-white/5 bg-black/5 px-3 py-1 rounded-full border border-white/5 dark:border-white/5 border-black/10 w-fit">
                 Not sent
               </span>
             </div>
           </div>
         </div>
 
-        <div className="glass-panel rounded-xl border border-white/10 overflow-hidden min-h-[100px]">
+        <div className="glass-panel rounded-xl border border-white/10 dark:border-white/10 border-black/10 overflow-hidden min-h-[100px]">
           <div className="p-4 flex flex-col h-full justify-between gap-3">
             <div className="flex justify-between items-start gap-3">
-              <span className="text-xs font-medium text-gray-400 leading-tight">Sent</span>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-white/80 flex-shrink-0">
+              <span className="text-xs font-medium text-[var(--text-muted)] leading-tight">Sent</span>
+              <div className="p-2 rounded-lg bg-white/5 dark:bg-white/5 bg-black/5 border border-white/5 dark:border-white/5 border-black/10 text-[var(--text-secondary)] flex-shrink-0">
                 <Send size={18} />
               </div>
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold font-display tracking-tight text-white leading-none">{stats.sent}</h3>
-              <span className="inline-flex items-center text-[10px] font-semibold text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/5 w-fit">
+              <h3 className="text-2xl font-bold font-display tracking-tight text-[var(--text-primary)] leading-none">{stats.sent}</h3>
+              <span className="inline-flex items-center text-[10px] font-semibold text-[var(--text-muted)] bg-white/5 dark:bg-white/5 bg-black/5 px-3 py-1 rounded-full border border-white/5 dark:border-white/5 border-black/10 w-fit">
                 Awaiting payment
               </span>
             </div>
           </div>
         </div>
 
-        <div className="glass-panel rounded-xl border border-white/10 overflow-hidden min-h-[100px]">
+        <div className="glass-panel rounded-xl border border-white/10 dark:border-white/10 border-black/10 overflow-hidden min-h-[100px]">
           <div className="p-4 flex flex-col h-full justify-between gap-3">
             <div className="flex justify-between items-start gap-3">
-              <span className="text-xs font-medium text-gray-400 leading-tight">Paid</span>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-white/80 flex-shrink-0">
+              <span className="text-xs font-medium text-[var(--text-muted)] leading-tight">Paid</span>
+              <div className="p-2 rounded-lg bg-white/5 dark:bg-white/5 bg-black/5 border border-white/5 dark:border-white/5 border-black/10 text-[var(--text-secondary)] flex-shrink-0">
                 <CheckCircle2 size={18} />
               </div>
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold font-display tracking-tight text-white leading-none">{stats.paid}</h3>
-              <span className="inline-flex items-center text-[10px] font-semibold text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/5 w-fit">
+              <h3 className="text-2xl font-bold font-display tracking-tight text-[var(--text-primary)] leading-none">{stats.paid}</h3>
+              <span className="inline-flex items-center text-[10px] font-semibold text-[var(--text-muted)] bg-white/5 dark:bg-white/5 bg-black/5 px-3 py-1 rounded-full border border-white/5 dark:border-white/5 border-black/10 w-fit">
                 Completed
               </span>
             </div>
           </div>
         </div>
 
-        <div className="glass-panel rounded-xl border border-white/10 overflow-hidden min-h-[100px]">
+        <div className="glass-panel rounded-xl border border-white/10 dark:border-white/10 border-black/10 overflow-hidden min-h-[100px]">
           <div className="p-4 flex flex-col h-full justify-between gap-3">
             <div className="flex justify-between items-start gap-3">
-              <span className="text-xs font-medium text-gray-400 leading-tight">Total Revenue</span>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-white/80 flex-shrink-0">
+              <span className="text-xs font-medium text-[var(--text-muted)] leading-tight">Total Revenue</span>
+              <div className="p-2 rounded-lg bg-white/5 dark:bg-white/5 bg-black/5 border border-white/5 dark:border-white/5 border-black/10 text-[var(--text-secondary)] flex-shrink-0">
                 <DollarSign size={18} />
               </div>
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold font-display tracking-tight text-white leading-none">
+              <h3 className="text-2xl font-bold font-display tracking-tight text-[var(--text-primary)] leading-none">
                 ${stats.totalRevenue.toFixed(2)}
               </h3>
-              <span className="inline-flex items-center text-[10px] font-semibold text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/5 w-fit">
+              <span className="inline-flex items-center text-[10px] font-semibold text-[var(--text-muted)] bg-white/5 dark:bg-white/5 bg-black/5 px-3 py-1 rounded-full border border-white/5 dark:border-white/5 border-black/10 w-fit">
                 Total earned
               </span>
             </div>
@@ -201,11 +201,11 @@ export function Invoices() {
       </div>
 
       {/* Invoices Table */}
-      <div className="glass-panel rounded-2xl overflow-hidden border border-white/10">
+      <div className="glass-panel rounded-2xl overflow-hidden border border-white/10 dark:border-white/10 border-black/10">
         <div className="overflow-x-auto p-4">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/10 bg-black/20 text-[10px] uppercase tracking-wider text-gray-400">
+              <tr className="border-b border-white/10 dark:border-white/10 border-black/10 bg-black/20 dark:bg-black/20 bg-white/20 text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
                 <th className="px-4 py-2 font-semibold">Customer</th>
                 <th className="px-4 py-2 font-semibold">Amount</th>
                 <th className="px-4 py-2 font-semibold">Status</th>
@@ -214,18 +214,18 @@ export function Invoices() {
                 <th className="px-4 py-2 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-sm">
+            <tbody className="divide-y divide-white/5 dark:divide-white/5 divide-black/5 text-sm">
               {invoicesLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-8 py-20 text-center text-gray-500 italic">
+                  <td colSpan={6} className="px-8 py-20 text-center text-[var(--text-muted)] italic">
                     Accessing database...
                   </td>
                 </tr>
               ) : filteredInvoices.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-8 py-20 text-center text-gray-500">
+                  <td colSpan={6} className="px-8 py-20 text-center text-[var(--text-muted)]">
                     <div className="flex flex-col items-center gap-5">
-                      <div className="p-5 rounded-full bg-white/5">
+                      <div className="p-5 rounded-full bg-white/5 dark:bg-white/5 bg-black/5">
                         <FileText size={24} />
                       </div>
                       <p>No invoices found. Create your first invoice to get started.</p>
@@ -234,19 +234,19 @@ export function Invoices() {
                 </tr>
               ) : (
                 filteredInvoices.map((invoice) => (
-                  <tr key={invoice.id} className="group hover:bg-white/5 transition-colors cursor-default">
+                  <tr key={invoice.id} className="group hover:bg-white/5 dark:hover:bg-white/5 hover:bg-black/5 transition-colors cursor-default">
                     <td className="px-4 py-2.5">
                       <div className="flex flex-col">
-                        <span className="font-medium text-white group-hover:text-indigo-300 transition-colors leading-tight text-sm">
+                        <span className="font-medium text-[var(--text-primary)] group-hover:text-primary transition-colors leading-tight text-sm">
                           {invoice.customer_name}
                         </span>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-[var(--text-muted)]">
                           {invoice.customer_email}
                         </span>
                       </div>
                     </td>
                     <td className="px-4 py-2.5">
-                      <span className="text-sm font-semibold text-white">
+                      <span className="text-sm font-semibold text-[var(--text-primary)]">
                         ${invoice.total.toFixed(2)}
                       </span>
                     </td>
@@ -259,14 +259,14 @@ export function Invoices() {
                       </span>
                     </td>
                     <td className="px-4 py-2.5">
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-[var(--text-secondary)]">
                         {invoice.due_date
                           ? new Date(invoice.due_date).toLocaleDateString()
                           : '—'}
                       </span>
                     </td>
                     <td className="px-4 py-2.5">
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-[var(--text-secondary)]">
                         {new Date(invoice.created_at).toLocaleDateString()}
                       </span>
                     </td>

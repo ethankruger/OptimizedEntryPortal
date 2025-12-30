@@ -23,7 +23,7 @@ export default {
                     foreground: "#94a3b8",
                 },
                 accent: {
-                    DEFAULT: "#818cf8",
+                    DEFAULT: "#ff8904",
                     foreground: "#ffffff",
                 },
                 destructive: {
@@ -33,7 +33,7 @@ export default {
                 border: "var(--btn-border)",
                 input: "var(--input)",
                 skeleton: "var(--skeleton)",
-                ring: "#30b357",
+                ring: "#ff8904",
                 sidebar: {
                     DEFAULT: 'hsl(var(--sidebar-background))',
                     foreground: 'hsl(var(--sidebar-foreground))',

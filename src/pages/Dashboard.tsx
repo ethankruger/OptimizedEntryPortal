@@ -1,27 +1,44 @@
 import { useState } from 'react';
 import { useCollection } from '../hooks/useCollection';
-import type { Inquiry, Appointment, Emergency } from '../types/schema';
+import type { Inquiry, Appointment, Emergency, CallRecording } from '../types/schema';
 import { PageHeader, PageContainer } from '../components/layout/PageComponents';
 import { OverviewChart } from '../components/charts/OverviewChart';
 import { DistributionChart } from '../components/charts/DistributionChart';
-import { Phone, Calendar, AlertCircle, ArrowUpRight, Activity, GripVertical, Users, Clock } from 'lucide-react';
-import { Reorder } from 'framer-motion';
+import { Phone, Calendar, AlertCircle, ArrowUpRight, Activity, Users, Clock, Mic } from 'lucide-react';
 
 const Dashboard = () => {
-    const { data: inquiries } = useCollection<Inquiry>('inquiries');
-    const { data: emergencies } = useCollection<Emergency>('emergencies', { orderBy: 'webhook_received_at' });
-    const { data: appointments } = useCollection<Appointment>('appointments');
+    const { data: inquiries, loading: loadingInquiries } = useCollection<Inquiry>('inquiries');
+    const { data: emergencies, loading: loadingEmergencies } = useCollection<Emergency>('emergencies', { orderBy: 'webhook_received_at' });
+    const { data: appointments, loading: loadingAppointments } = useCollection<Appointment>('appointments');
+    const { data: recordings, loading: loadingRecordings } = useCollection<CallRecording>('call_recordings');
 
     // Chart Time Range State
     const [timeRange, setTimeRange] = useState<'12m' | '30d'>('12m');
+    const [chartDataType, setChartDataType] = useState<'all' | 'inquiries' | 'appointments' | 'emergencies'>('all');
     const [distributionTimeRange, setDistributionTimeRange] = useState<'12m' | '30d'>('12m');
 
-    // Reorder Mode State
-    const [isReorderMode, setIsReorderMode] = useState(false);
+    // Calculate metrics (ensure data arrays exist)
+    const totalInteractions = (inquiries?.length || 0) + (emergencies?.length || 0) + (appointments?.length || 0);
+    const conversionRate = (inquiries?.length || 0) > 0 ? Math.round(((appointments?.length || 0) / (inquiries?.length || 0)) * 100) : 0;
 
-    // Calculate metrics
-    const totalInteractions = inquiries.length + emergencies.length + appointments.length;
-    const conversionRate = inquiries.length > 0 ? Math.round((appointments.length / inquiries.length) * 100) : 0;
+    // Count calls linked to inquiries and emergencies
+    const inquiryCalls = recordings?.filter(r => r.inquiry_id)?.length || 0;
+    const emergencyCalls = recordings?.filter(r => {
+        // Emergency calls are those not linked to inquiry or appointment
+        // OR we can check if they match emergency records by phone/name
+        return !r.inquiry_id && !r.appointment_id;
+    })?.length || 0;
+
+    console.log('Dashboard Data:', {
+        inquiries: inquiries?.length,
+        emergencies: emergencies?.length,
+        appointments: appointments?.length,
+        recordings: recordings?.length,
+        inquiryCalls,
+        emergencyCalls,
+        totalInteractions,
+        conversionRate
+    });
 
     // Defines one widget on the dashboard
     type Widget = {
@@ -34,15 +51,62 @@ const Dashboard = () => {
         change?: string;
         icon?: any;
         color?: string;
+        gradient?: string;
+        iconBg?: string;
+        iconBorder?: string;
     };
 
-    // Initial widgets list
-    const initialWidgets: Widget[] = [
+    // Initial widgets list - recalculate on each render with current data
+    const widgets: Widget[] = [
         // Row 1: Metrics
-        { id: 'interactions', type: 'metric', colSpan: 'col-span-1', label: 'Total Interactions', value: totalInteractions, change: '+12.5%', icon: Activity, color: '#30b357' },
-        { id: 'conversion', type: 'metric', colSpan: 'col-span-1', label: 'Conversion Rate', value: `${conversionRate}%`, change: '+4.2%', icon: ArrowUpRight, color: '#30b357' },
-        { id: 'emergencies', type: 'metric', colSpan: 'col-span-1', label: 'Active Emergencies', value: emergencies.length, change: 'Critical', icon: AlertCircle, color: '#ff8904' },
-        { id: 'scheduled', type: 'metric', colSpan: 'col-span-1', label: 'Scheduled Visits', value: appointments.length, change: 'Next 7 Days', icon: Calendar, color: '#ff8904' },
+        {
+            id: 'interactions',
+            type: 'metric',
+            colSpan: 'col-span-1',
+            label: 'Total Interactions',
+            value: totalInteractions,
+            change: `All time`,
+            icon: Activity,
+            gradient: 'from-emerald-500 to-green-600',
+            iconBg: 'bg-emerald-500/20',
+            iconBorder: 'border-emerald-500/30'
+        },
+        {
+            id: 'conversion',
+            type: 'metric',
+            colSpan: 'col-span-1',
+            label: 'Conversion Rate',
+            value: `${conversionRate}%`,
+            change: `${appointments?.length || 0}/${inquiries?.length || 0} converted`,
+            icon: ArrowUpRight,
+            gradient: 'from-purple-500 to-pink-600',
+            iconBg: 'bg-purple-500/20',
+            iconBorder: 'border-purple-500/30'
+        },
+        {
+            id: 'inquiry-calls',
+            type: 'metric',
+            colSpan: 'col-span-1',
+            label: 'Inquiry Calls',
+            value: inquiryCalls,
+            change: `${inquiries?.length || 0} total inquiries`,
+            icon: Phone,
+            gradient: 'from-blue-500 to-cyan-600',
+            iconBg: 'bg-blue-500/20',
+            iconBorder: 'border-blue-500/30'
+        },
+        {
+            id: 'total-emergencies',
+            type: 'metric',
+            colSpan: 'col-span-1',
+            label: 'Total Emergencies',
+            value: emergencies?.length || 0,
+            change: `All time`,
+            icon: AlertCircle,
+            gradient: 'from-orange-500 to-red-600',
+            iconBg: 'bg-orange-500/20',
+            iconBorder: 'border-orange-500/30'
+        },
 
         // Row 2: Charts Area
         { id: 'chart-overview', type: 'chart-overview', colSpan: 'col-span-1 lg:col-span-2' },
@@ -53,30 +117,23 @@ const Dashboard = () => {
         { id: 'status-system', type: 'status-system', colSpan: 'col-span-1 lg:col-span-2' },
     ];
 
-    // Wait, the user asked for Distribution Chart constant.
-    // In my previous replace attempt I had 'chart-distribution' as its own widget.
-    // I will stick to that.
-
-    const [widgets, setWidgets] = useState(initialWidgets);
-
     // Render helpers for specific widget types
     const renderWidgetContent = (widget: Widget) => {
         switch (widget.type) {
             case 'metric':
                 const Icon = widget.icon;
                 return (
-                    <div className="p-4 flex flex-col h-full justify-between gap-3">
-                        <div className="flex justify-between items-start gap-4">
-                            <span className="text-sm font-medium text-[var(--text-secondary)] line-clamp-1 flex-1 leading-tight">{widget.label}</span>
-                            <div className="p-2 rounded-lg bg-white/5 dark:bg-white/5 bg-black/5 border border-white/5 dark:border-white/5 border-black/10 text-[var(--text-primary)] flex-shrink-0">
-                                <Icon size={18} />
+                    <div className="p-5 flex flex-col h-full justify-between gap-4 relative group">
+                        <div className={`absolute inset-0 bg-gradient-to-r ${widget.gradient} opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300`} />
+                        <div className="flex justify-between items-start gap-4 relative z-10">
+                            <span className="text-xs font-semibold text-[var(--text-muted)] line-clamp-1 flex-1 leading-tight uppercase tracking-wider">{widget.label}</span>
+                            <div className={`p-2.5 rounded-lg ${widget.iconBg} border ${widget.iconBorder} flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                                <Icon size={20} className={`bg-gradient-to-r ${widget.gradient} bg-clip-text text-transparent`} style={{ WebkitTextFillColor: 'transparent' }} />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <div className="text-2xl font-bold font-display text-[var(--text-primary)] tracking-tight leading-none">{widget.value}</div>
-                            <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-1 rounded-full border w-fit ${widget.change === 'Critical' ? 'bg-[#ff8904]/10 text-[#ff8904] border-[#ff8904]/20' :
-                                'bg-[#30b357]/10 text-[#30b357] border-[#30b357]/20'
-                                }`}>
+                        <div className="space-y-2 relative z-10">
+                            <div className={`text-3xl font-bold font-display tracking-tight bg-gradient-to-r ${widget.gradient} bg-clip-text text-transparent leading-none`}>{widget.value}</div>
+                            <span className="inline-flex items-center text-[10px] font-semibold text-[var(--text-muted)] bg-white/5 dark:bg-white/5 bg-black/5 px-3 py-1.5 rounded-full border border-white/5 dark:border-white/5 border-black/10 w-fit">
                                 {widget.change}
                             </span>
                         </div>
@@ -84,19 +141,39 @@ const Dashboard = () => {
                 );
 
             case 'chart-overview':
-                const allInteractions = [
-                    ...inquiries.map(i => ({ created_at: i.created_at })),
-                    ...emergencies.map(e => ({ created_at: e.webhook_received_at || new Date().toISOString() })), // Fallback if missing
-                    ...appointments.map(a => ({ created_at: a.created_at || a.appointment_date || new Date().toISOString() }))
-                ];
+                // Filter data based on selected type
+                let chartData = [];
+                if (chartDataType === 'all') {
+                    chartData = [
+                        ...inquiries.map(i => ({ created_at: i.created_at })),
+                        ...emergencies.map(e => ({ created_at: e.webhook_received_at || new Date().toISOString() })),
+                        ...appointments.map(a => ({ created_at: a.created_at || a.appointment_date || new Date().toISOString() }))
+                    ];
+                } else if (chartDataType === 'inquiries') {
+                    chartData = inquiries.map(i => ({ created_at: i.created_at }));
+                } else if (chartDataType === 'appointments') {
+                    chartData = appointments.map(a => ({ created_at: a.created_at || a.appointment_date || new Date().toISOString() }));
+                } else if (chartDataType === 'emergencies') {
+                    chartData = emergencies.map(e => ({ created_at: e.webhook_received_at || new Date().toISOString() }));
+                }
 
                 return (
                     <div className="p-5 flex-1 flex flex-col h-full">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-lg font-semibold text-[var(--text-primary)] leading-tight">Analytics Overview</h3>
-                            <div className="flex gap-4">
+                            <div className="flex gap-2">
                                 <select
-                                    className="bg-white/5 dark:bg-white/5 bg-black/5 border border-white/10 dark:border-white/10 border-black/10 rounded-lg text-xs text-[var(--text-secondary)] px-3 py-1.5 outline-none cursor-pointer hover:bg-white/10"
+                                    className="bg-white/5 dark:bg-white/5 bg-black/5 border border-white/10 dark:border-white/10 border-black/10 rounded-lg text-xs text-[var(--text-secondary)] px-3 py-1.5 outline-none cursor-pointer hover:bg-white/10 dark:hover:bg-white/10 hover:bg-black/10"
+                                    value={chartDataType}
+                                    onChange={(e) => setChartDataType(e.target.value as 'all' | 'inquiries' | 'appointments' | 'emergencies')}
+                                >
+                                    <option value="all">All Data</option>
+                                    <option value="inquiries">Inquiries</option>
+                                    <option value="appointments">Appointments</option>
+                                    <option value="emergencies">Emergencies</option>
+                                </select>
+                                <select
+                                    className="bg-white/5 dark:bg-white/5 bg-black/5 border border-white/10 dark:border-white/10 border-black/10 rounded-lg text-xs text-[var(--text-secondary)] px-3 py-1.5 outline-none cursor-pointer hover:bg-white/10 dark:hover:bg-white/10 hover:bg-black/10"
                                     value={timeRange}
                                     onChange={(e) => setTimeRange(e.target.value as '12m' | '30d')}
                                 >
@@ -106,7 +183,7 @@ const Dashboard = () => {
                             </div>
                         </div>
                         <div className="px-4 flex-1 min-h-[300px]">
-                            <OverviewChart data={allInteractions} timeRange={timeRange} />
+                            <OverviewChart data={chartData} timeRange={timeRange} />
                         </div>
                     </div>
                 );
@@ -150,7 +227,7 @@ const Dashboard = () => {
                             {inquiries.slice(0, 5).map((inquiry) => (
                                 <div key={inquiry.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 dark:hover:bg-white/5 hover:bg-black/5 transition-colors group gap-3">
                                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                                        <div className="w-8 h-8 rounded-full bg-[#30b357]/10 flex items-center justify-center text-[#30b357] group-hover:bg-[#30b357]/20 transition-colors flex-shrink-0">
+                                        <div className="w-8 h-8 rounded-full bg-[#ff8904]/10 flex items-center justify-center text-[#ff8904] group-hover:bg-[#ff8904]/20 transition-colors flex-shrink-0">
                                             <Phone size={14} />
                                         </div>
                                         <div className="min-w-0 flex-1">
@@ -172,15 +249,15 @@ const Dashboard = () => {
                         <div className="space-y-3">
                             <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 dark:bg-white/5 bg-black/5 border border-white/5 dark:border-white/5 border-black/10 gap-3">
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                                    <Activity className="text-[#30b357] flex-shrink-0" size={16} />
+                                    <Activity className="text-[#ff8904] flex-shrink-0" size={16} />
                                     <div className="min-w-0 flex-1">
                                         <div className="text-sm font-medium text-[var(--text-primary)] leading-tight">AI Engine</div>
                                         <div className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-tight">Operational</div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#30b357] animate-pulse" />
-                                    <span className="text-[10px] text-[#30b357] font-medium leading-tight">Online</span>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[#ff8904] animate-pulse" />
+                                    <span className="text-[10px] text-[#ff8904] font-medium leading-tight">Online</span>
                                 </div>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 dark:bg-white/5 bg-black/5 border border-white/5 dark:border-white/5 border-black/10 gap-3">
@@ -194,12 +271,12 @@ const Dashboard = () => {
                                 <div className="flex -space-x-1.5 flex-shrink-0">
                                     <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-primary to-secondary border-2 border-[var(--bg-primary)]" />
                                     <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-secondary to-primary border-2 border-[var(--bg-primary)]" />
-                                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-primary to-secondary border-2 border-[var(--bg-primary)] flex items-center justify-center text-[8px] text-white">+1</div>
+                                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-primary to-secondary border-2 border-[var(--bg-primary)] flex items-center justify-center text-[8px] text-[var(--text-primary)]">+1</div>
                                 </div>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 dark:bg-white/5 bg-black/5 border border-white/5 dark:border-white/5 border-black/10 gap-3">
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                                    <Clock className="text-[#30b357] flex-shrink-0" size={16} />
+                                    <Clock className="text-[#ff8904] flex-shrink-0" size={16} />
                                     <div className="min-w-0 flex-1">
                                         <div className="text-sm font-medium text-[var(--text-primary)] leading-tight">Uptime</div>
                                         <div className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-tight">99.9% this month</div>
@@ -218,53 +295,21 @@ const Dashboard = () => {
 
     return (
         <PageContainer>
-            <div className="flex items-center justify-between mb-6">
-                <PageHeader title="Dashboard" description="Real-time overview of system performance and activity." />
-                <button
-                    onClick={() => setIsReorderMode(!isReorderMode)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${isReorderMode
-                        ? 'bg-primary/20 text-primary border-primary/30'
-                        : 'bg-white/5 border-white/10 text-white/60 hover:text-white'
-                        }`}
-                >
-                    {isReorderMode ? 'Done Reordering' : 'Reorder Tiles'}
-                </button>
-            </div>
+            <PageHeader title="Dashboard" description="Real-time overview of system performance and activity." />
 
-            {/* Unified Reorderable Grid */}
-            <Reorder.Group
-                axis="y"
-                values={widgets}
-                onReorder={setWidgets}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6"
-            >
+            {/* Unified Grid - removed reordering since widgets now rebuild each render */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 {widgets.map((widget) => (
-                    <Reorder.Item
+                    <div
                         key={widget.id}
-                        value={widget}
-                        drag={isReorderMode}
-                        // We use col-span classes to control grid sizing
-                        // Reorder.Item creates a list item (li) by default, but here it's fine.
-                        // We need to ensure we style it properly.
-                        // Actually, 'Reorder.Item' renders a 'li' by default if the parent is 'Reorder.Group' (ul/ol).
-                        // But 'Reorder.Group' can also accept 'as="div"'.
-                        // However, 'Reorder.Group' default is 'ul'.
-                        // Ideally we should use 'as="div"' for grid semantics, but Framer Motion Reorder is list-based.
-                        // Let's assume standard behavior. To make it a grid, the parent must be a grid.
-                        // If Reorder.Group is a grid, Reorder.Item (li) will be grid items.
-                        className={`${widget.colSpan} relative list-none`}
+                        className={`${widget.colSpan} relative`}
                     >
-                        <div className={`glass-panel rounded-xl border border-white/10 dark:border-white/10 border-black/10 overflow-hidden h-full ${isReorderMode ? 'cursor-move active:cursor-grabbing hover:border-primary/50' : ''}`}>
-                            {isReorderMode && (
-                                <div className="absolute top-2 right-2 text-white/20 z-10 pointer-events-none">
-                                    <GripVertical size={14} />
-                                </div>
-                            )}
+                        <div className="glass-panel rounded-xl border border-white/10 dark:border-white/10 border-black/10 overflow-hidden h-full">
                             {renderWidgetContent(widget)}
                         </div>
-                    </Reorder.Item>
+                    </div>
                 ))}
-            </Reorder.Group>
+            </div>
         </PageContainer>
     );
 };
